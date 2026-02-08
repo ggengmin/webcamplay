@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>졸업 축하 메시지 💌</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Dongle:wght@300;400;700&family=Gaegu:wght@300;400;700&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Gaegu', cursive;
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            padding: 40px 30px;
+            border-radius: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            color: #ff6b9d;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        p {
+            font-size: 1.3rem;
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 150px;
+            padding: 20px;
+            font-size: 1.5rem;
+            font-family: 'Gaegu', cursive;
+            border: 3px solid #ffd6e7;
+            border-radius: 20px;
+            resize: none;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        textarea:focus {
+            border-color: #ff6b9d;
+            box-shadow: 0 0 20px rgba(255, 107, 157, 0.2);
+        }
+
+        textarea::placeholder {
+            color: #ffb3d1;
+        }
+
+        button {
+            width: 100%;
+            padding: 18px;
+            margin-top: 20px;
+            font-size: 1.8rem;
+            font-family: 'Gaegu', cursive;
+            font-weight: 700;
+            background: linear-gradient(135deg, #ff6b9d 0%, #feca57 100%);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(255, 107, 157, 0.3);
+        }
+
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(255, 107, 157, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .success-message {
+            display: none;
+            margin-top: 20px;
+            padding: 15px;
+            background: #d4edda;
+            border: 2px solid #c3e6cb;
+            border-radius: 15px;
+            color: #155724;
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>💌 축하 메시지</h1>
+        <p>졸업을 축하하는 메시지를 남겨주세요!</p>
+        
+        <textarea id="messageInput" placeholder="축하 메시지를 입력해주세요 💕" maxlength="100"></textarea>
+        
+        <button id="submitBtn" onclick="sendMessage()">✨ 보내기 ✨</button>
+        
+        <div id="successMessage" class="success-message">
+            메시지가 전송되었어요! 💖
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+        import { getDatabase, ref, push } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js';
+
+        // Firebase 설정 (여기에 본인의 Firebase 설정값을 넣으세요)
+        const firebaseConfig = {
+  apiKey: "AIzaSyCTBlTPh54ns4Vy_86bfrROg7vN-SoFNno",
+  authDomain: "webcam-6a479.firebaseapp.com",
+  databaseURL: "https://webcam-6a479-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "webcam-6a479",
+  storageBucket: "webcam-6a479.firebasestorage.app",
+  messagingSenderId: "67452257327",
+  appId: "1:67452257327:web:ccc2f11c6cfa5fe523b2da"
+        };
+        // Firebase 초기화
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+
+        // 전역으로 함수 노출
+        window.sendMessage = function() {
+            const messageInput = document.getElementById('messageInput');
+            const message = messageInput.value.trim();
+            
+            if (!message) {
+                alert('메시지를 입력해주세요! 💕');
+                return;
+            }
+
+            // Firebase에 메시지 저장
+            const messagesRef = ref(database, 'messages');
+            push(messagesRef, {
+                text: message,
+                timestamp: Date.now()
+            }).then(() => {
+                // 성공 메시지 표시
+                document.getElementById('successMessage').style.display = 'block';
+                messageInput.value = '';
+                
+                // 2초 후 메시지 숨기기
+                setTimeout(() => {
+                    document.getElementById('successMessage').style.display = 'none';
+                }, 7000);
+            }).catch((error) => {
+                alert('전송 실패! 다시 시도해주세요: ' + error.message);
+            });
+        };
+
+        // Enter 키로도 전송 가능
+        document.getElementById('messageInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                window.sendMessage();
+            }
+        });
+    </script>
+</body>
+</html>

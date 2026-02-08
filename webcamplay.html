@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>포토존</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Dongle:wght@300;400;700&family=Gaegu:wght@300;400;700&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background: black;
+        }
+
+        #container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        #video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scaleX(-1);
+        }
+
+        #frame {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+            object-fit: cover;
+        }
+
+        #messagesContainer {
+            position: absolute;
+            top: 15%;
+            left: 0;
+            width: 100%;
+            height: 30%;
+            pointer-events: none;
+            z-index: 20;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            overflow: hidden;
+        }
+
+        .message {
+            font-family: 'Gaegu', cursive;
+            font-size: 3rem;
+            font-weight: 700;
+            color: white;
+            text-shadow: 
+                3px 3px 0 #ff6b9d,
+                -3px -3px 0 #ff6b9d,
+                3px -3px 0 #ff6b9d,
+                -3px 3px 0 #ff6b9d,
+                0 0 20px rgba(255, 107, 157, 0.8);
+            padding: 15px 30px;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 50px;
+            animation: fadeInOut 6s ease-in-out forwards;
+            max-width: 80%;
+            text-align: center;
+            word-wrap: break-word;
+        }
+
+        @keyframes fadeInOut {
+            0% {
+                opacity: 0;
+                transform: translateY(-50px) scale(0.8);
+            }
+            15% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+            85% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(50px) scale(0.8);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <video id="video" autoplay playsinline muted></video>
+        <img id="frame" src="webcamplay.png" alt="프레임">
+        <div id="messagesContainer"></div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+        import { getDatabase, ref, onChildAdded, query, limitToLast } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js';
+
+        // Firebase 설정 (여기에 본인의 Firebase 설정값을 넣으세요)
+        const firebaseConfig = {
+  apiKey: "AIzaSyCTBlTPh54ns4Vy_86bfrROg7vN-SoFNno",
+  authDomain: "webcam-6a479.firebaseapp.com",
+  databaseURL: "https://webcam-6a479-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "webcam-6a479",
+  storageBucket: "webcam-6a479.firebasestorage.app",
+  messagingSenderId: "67452257327",
+  appId: "1:67452257327:web:ccc2f11c6cfa5fe523b2da"
+        };
+
+        // Firebase 초기화
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+
+        // 웹캠 시작
+        const video = document.getElementById('video');
+        async function startWebcam() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        width: { ideal: 1920 },
+                        height: { ideal: 1080 }
+                    }
+                });
+                video.srcObject = stream;
+            } catch (error) {
+                alert('웹캠 오류: ' + error.message);
+            }
+        }
+        startWebcam();
+
+        // 메시지 표시
+        const messagesContainer = document.getElementById('messagesContainer');
+        let isInitialLoad = true;
+
+        // Firebase에서 새 메시지 실시간 수신
+        const messagesRef = ref(database, 'messages');
+        const recentMessagesQuery = query(messagesRef, limitToLast(10));
+
+        onChildAdded(recentMessagesQuery, (snapshot) => {
+            // 초기 로드 시 기존 메시지 무시
+            if (isInitialLoad) {
+                setTimeout(() => { isInitialLoad = false; }, 1000);
+                return;
+            }
+
+            const messageData = snapshot.val();
+            showMessage(messageData.text);
+        });
+
+        function showMessage(text) {
+            // 메시지 요소 생성
+            const messageEl = document.createElement('div');
+            messageEl.className = 'message';
+            messageEl.textContent = text;
+            
+            // 컨테이너에 추가
+            messagesContainer.appendChild(messageEl);
+            
+            // 6초 후 제거 (애니메이션 시간과 동일)
+            setTimeout(() => {
+                messageEl.remove();
+            }, 6000);
+
+            // 최대 3개까지만 표시
+            while (messagesContainer.children.length > 3) {
+                messagesContainer.firstChild.remove();
+            }
+        }
+    </script>
+</body>
+</html>
