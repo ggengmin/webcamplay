@@ -30,7 +30,31 @@
             height: 100%;
             object-fit: cover;
             transform: scaleX(-1);
-        }
+    -webkit-transform: scaleX(-1);      /* ← 추가: Safari/Chrome */
+    -moz-transform: scaleX(-1);         /* ← 추가: Firefox */
+    -ms-transform: scaleX(-1);          /* ← 추가: IE/Edge */
+    -o-transform: scaleX(-1);           /* ← 추가: Opera */
+}
+
+/* ← 아래 전체가 새로 추가됨 */
+/* 전체화면에서도 거울 모드 유지 */
+#video:fullscreen {
+    transform: scaleX(-1) !important;
+    -webkit-transform: scaleX(-1) !important;
+}
+
+#video:-webkit-full-screen {
+    transform: scaleX(-1) !important;
+    -webkit-transform: scaleX(-1) !important;
+}
+
+#video:-moz-full-screen {
+    transform: scaleX(-1) !important;
+}
+
+#video:-ms-fullscreen {
+    transform: scaleX(-1) !important;
+}
 
         #frame {
             position: absolute;
